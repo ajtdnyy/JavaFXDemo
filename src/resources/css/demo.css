@@ -1,0 +1,23 @@
+/*
+ * Empty Stylesheet file.
+ */
+
+.mainFxmlClass {
+
+}
+.btn{
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+}
+.left_point{
+    -fx-background-image: url(../img/left_16.png);
+}
+.right_point{
+    -fx-background-image: url(../img/right_16.png);
+}
+.home_btn{
+    -fx-background-image: url(../img/home_16.png);
+}
+.refresh_btn{
+    -fx-background-image: url(../img/refresh.png);
+}
