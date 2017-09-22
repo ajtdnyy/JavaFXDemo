@@ -21,3 +21,12 @@
 .refresh_btn{
     -fx-background-image: url(../img/refresh.png);
 }
+.bookmark{
+    -fx-background-image: url(../img/plus_16.png);
+}
+.inner_pane{
+    -fx-border-radius: 3px;
+    -fx-border-color: dodgerblue;
+    -fx-border-style: solid;
+    -fx-background-color: white;
+}

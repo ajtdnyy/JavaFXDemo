@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<!--
+Copyright 2017 lancw.
+ 个人博客 http://www.vbox.top/
+-->
+<html>
+    <head>
+        <title>JavaFX简单浏览器设置</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style type="text/css">
+            .input_text{margin-left: 5px;width:300px;border:none;border-bottom:1px solid cornflowerblue;}
+            .title{margin: 5px;}
+            ul{padding-left: 10px;}
+            li{list-style:none;margin-bottom: 10px;}
+            #showbookmark{margin-left: 15px;}
+            label{margin-left: 9px}
+            select{width: 90px;margin-left: 40px;height: 28px;border: 1px solid cornflowerblue;}
+        </style>
+        <script type="text/javascript">
+            function deleteEle(ele) {
+                document.getElementById("dl").removeChild(document.getElementById(ele));
+            }
+            var nodeId = 1;
+            function addNode(val) {
+                var html = '<input class="input_text" style="margin-left: -10px;" ' + (val ? "value=" + val : "") + ' name="urlvalue"/>';
+                html += '<a href="javascript:deleteEle(' + nodeId + ')">删除</a>';
+                var dd = document.createElement("dd");
+                dd.setAttribute("id", nodeId);
+                dd.innerHTML = html;
+                document.getElementById("dl").appendChild(dd);
+                nodeId++;
+            }
+            function getForm() {
+                var data = "home=" + encodeURIComponent(document.getElementById("home").value);
+                data += "&searchEngines=" + encodeURIComponent(document.getElementById("searchEngines").value);
+                if (document.getElementById("newtab").checked) {
+                    data += "&initType=" + document.getElementById("newtab").value;
+                } else {
+                    data += "&initType=" + document.getElementById("urls").value;
+                }
+                var val = document.getElementsByName("urlvalue");
+                var dt = '';
+                for (var i = 0; i < val.length; i++) {
+                    dt += encodeURIComponent(val[i].value) + ",";
+                }
+                data += "&initURLS=" + dt.substring(0, dt.length - 1);
+                data += "&showBookmark=" + document.getElementById("showbookmark").checked;
+                return data;
+            }
+            window.onload = function () {
+                var url = document.location.href;
+                var index = url.indexOf("?");
+                if (index >= 0) {
+                    url = url.substr(index + 1);
+                    var data = url.split("&");
+                    for (var i = 0; i < data.length; i++) {
+                        var temp = data[i].split("=");
+                        if (temp[0] == 'home') {
+                            document.getElementById("home").value = temp[1];
+                        } else if (temp[0] == 'searchEngines') {
+                            document.getElementById("searchEngines").value = temp[1];
+                        } else if (temp[0] == 'initType') {
+                            document.getElementById(temp[1]).checked = true;
+                        } else if (temp[0] == 'initURLS') {
+                            var tmp = temp[1].split(",");
+                            for (var k = 0; k < tmp.length; k++) {
+                                if (k == 0) {
+                                    document.getElementsByName("urlvalue")[0].value = tmp[k];
+                                } else {
+                                    addNode(tmp[k]);
+                                }
+                            }
+                        } else if (temp[0] == 'showBookmark') {
+                            if (temp[1] == 'true') {
+                                document.getElementById("showbookmark").checked = true;
+                            } else {
+                                document.getElementById("showbookmark").checked = false;
+                            }
+                        }
+                    }
+                }
+            }
+        </script>
+    </head>
+    <body>
+        <h3>设置</h3>
+        <form id="form">
+            <div>
+                <div class="title" onclick="getForm()">主页</div>
+                <input class="input_text" style="margin-left: 40px;" id="home" value=""/>
+            </div>
+            <div>
+                <div class="title">搜索引擎</div>
+                <select id="searchEngines">
+                    <option value="baidu">百度</option>
+                    <option value="google">谷歌</option>
+                    <option value="bing">必应</option>
+                    <option value="yahoo">雅虎</option>
+                    <option value="sogou">搜狗</option>
+                    <option disabled value="so">360</option>
+                </select>
+            </div>
+            <div>
+                <div class="title">启动时</div>
+                <ul>
+                    <li>
+                        <input type="radio" name="onstartup" id="newtab" value="newtab"/><label for="newtab">打开新标签页</label>
+                    </li>
+                    <li>
+                        <input type="radio" name="onstartup" id="urls" value="urls"/><label for="urls">打开下列网页</label>
+                        <a href="javascript:addNode()">添加</a>
+                        <dl id="dl">
+                            <dd id="0">
+                                <input class="input_text" style="margin-left: -10px;" name="urlvalue"/>
+                                <a href="javascript:deleteEle(0)">删除</a>
+                            </dd>
+                        </dl>
+                    </li>
+                </ul>
+            </div>
+            <div>
+                <div class="title">显示书签栏</div>
+                <input type="checkbox" name="showbookmark" id="showbookmark"/><label for="showbookmark">显示书签栏</label>
+            </div>
+        </form>
+    </body>
+</html>

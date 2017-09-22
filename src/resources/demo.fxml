@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.text.*?>
 <?import javafx.scene.web.*?>
 <?import javafx.geometry.*?>
 <?import java.lang.*?>
@@ -18,13 +19,13 @@
             <menus>
                 <Menu mnemonicParsing="false" text="File">
                     <items>
-                        <CheckMenuItem mnemonicParsing="false" onAction="#showBookmark" text="显示书签栏" />
+                        <CheckMenuItem fx:id="bookmarkMenu" mnemonicParsing="false" onAction="#showBookmark" text="显示书签栏" />
                         <MenuItem mnemonicParsing="false" onAction="#closeAction" text="退出" />
                     </items>
                 </Menu>
                 <Menu mnemonicParsing="false" text="Edit">
                     <items>
-                        <MenuItem mnemonicParsing="false" text="Delete" />
+                        <MenuItem mnemonicParsing="false" onAction="#showSetting" text="设置" />
                     </items>
                 </Menu>
                 <Menu mnemonicParsing="false" text="Help">
@@ -35,5 +36,26 @@
             </menus>
         </MenuBar>
         <TabPane fx:id="tabPane" layoutY="25.0" prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="ALL_TABS" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="25.0" />
+        <HBox fx:id="bookmarkBox" prefHeight="25.0" prefWidth="200.0" spacing="10.0" visible="false" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="80.0">
+            <padding>
+                <Insets bottom="3.0" left="3.0" right="3.0" top="3.0" />
+            </padding>
+        </HBox>
+        <Button fx:id="addTabBtn" mnemonicParsing="false" prefHeight="15.0" prefWidth="15.0" text="+" visible="false" AnchorPane.leftAnchor="220.0" AnchorPane.topAnchor="30.0" />
+        <AnchorPane fx:id="bookmarkPane" layoutY="89.0" prefHeight="139.0" prefWidth="344.0" styleClass="inner_pane" visible="false" AnchorPane.topAnchor="89.0">
+            <children>
+                <Label alignment="CENTER" contentDisplay="CENTER" layoutX="6.0" layoutY="14.0" prefWidth="344.0" text="书签管理" textAlignment="CENTER" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <font>
+                        <Font size="15.0" />
+                    </font>
+                </Label>
+                <Label layoutX="6.0" layoutY="34.0" text="名称" AnchorPane.leftAnchor="6.0" AnchorPane.topAnchor="34.0" />
+                <Label layoutX="6.0" layoutY="69.0" text="地址" AnchorPane.leftAnchor="6.0" AnchorPane.topAnchor="69.0" />
+                <TextField fx:id="bookmarkName" layoutX="40.0" layoutY="34.0" prefHeight="23.0" prefWidth="299.0" AnchorPane.topAnchor="34.0" />
+                <TextField fx:id="bookmarkAddress" layoutX="40.0" layoutY="69.0" prefHeight="23.0" prefWidth="299.0" AnchorPane.topAnchor="69.0" />
+                <Button layoutX="145.0" layoutY="104.0" mnemonicParsing="false" onAction="#saveBookmark" text="保存" AnchorPane.topAnchor="104.0" />
+                <Button layoutX="284.0" layoutY="3.0" mnemonicParsing="false" onAction="#hideBookmark" text="X" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+            </children>
+        </AnchorPane>
     </children>
 </AnchorPane>

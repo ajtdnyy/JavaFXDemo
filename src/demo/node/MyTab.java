@@ -1,13 +1,15 @@
 package demo.node;
 
+import demo.controller.DemoController;
+import demo.model.Setting;
+import demo.util.JaxbUtil;
 import java.util.regex.Pattern;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
@@ -19,10 +21,10 @@ import org.w3c.dom.events.EventTarget;
 import org.w3c.dom.html.HTMLAnchorElement;
 
 /*
- * Copyright 2017 lancw.
+ * Copyright 2017 开发辅助.
  *  个人博客 http://www.vbox.top/
  * @version 1.0
- * @author ajtdnyy
+ * @author 开发辅助
  * @since 2017-9-16 14:05:19
  */
 public class MyTab extends Tab {
@@ -31,26 +33,27 @@ public class MyTab extends Tab {
     private static final String TARGET = "target";
     private static final String CLICK = "click";
     private static final String DEFAULT_TEXT = "新标签";
-    private static final String SEARCH = "https://www.baidu.com/s?wd=";
+    public static String SEARCH = "https://www.baidu.com/s?wd=";
     public static String HOME_URL = "http://www.vbox.top";
+    public static final String GET_FORM_DATA_SCRIPT = "var data=\"home=\"+encodeURIComponent(document.getElementById(\"home\").value);data+=\"&searchEngines=\"+encodeURIComponent(document.getElementById(\"searchEngines\").value);if(document.getElementById(\"newtab\").checked){data+=\"&initType=\"+document.getElementById(\"newtab\").value}else{data+=\"&initType=\"+document.getElementById(\"urls\").value}var val=document.getElementsByName(\"urlvalue\");var dt='';for(var i=0;i<val.length;i++){dt+=encodeURIComponent(val[i].value)+\",\"}data+=\"&initURLS=\"+dt.substring(0,dt.length-1);data+=\"&showBookmark=\"+document.getElementById(\"showbookmark\").checked;";
     private static final String PROTOCOL = "^(http|ftp|https):\\/\\/\\S*";
     private static final String URL_REG_EXP = "((http|ftp|https):\\/\\/)?[\\w\\-_]+(\\.[\\w\\-_]+)+([\\w\\-\\.,@?^=%&amp;:/~\\+#]*[\\w\\-\\@?^=%&amp;/~\\+#])?";
     private final WebView webview;
     private final AnchorPane anchorPane;
     private final HBox addressBox;
-    private final HBox bookmarkBox;
     private final WebHistory history;
     private final TextField input;
-    private static Double currentWebViewTop = 28D;
-    private static ObservableList<Node> bookmarks;
+    public static Double currentWebViewTop = 28D;
+    private static DemoController controller;
+    private Type type;
 
-    public MyTab() {
-        this(HOME_URL);
+    public MyTab(DemoController controller) {
+        this(HOME_URL, controller);
     }
 
-    public MyTab(String loc) {
+    public MyTab(String loc, DemoController dc) {
+        controller = dc;
         addressBox = new HBox();
-        bookmarkBox = new HBox();
         webview = new WebView();
         input = new TextField();
         //设置各组件在AnchorPane中的位置
@@ -58,37 +61,52 @@ public class MyTab extends Tab {
         AnchorPane.setRightAnchor(webview, 0D);
         AnchorPane.setBottomAnchor(webview, 0D);
         AnchorPane.setTopAnchor(addressBox, 0D);
-        AnchorPane.setTopAnchor(bookmarkBox, 28D);
         AnchorPane.setTopAnchor(webview, currentWebViewTop);
         //为各个组件添加子组件及设置初始参数和事件监听
         initHBox(addressBox);
         initChild(addressBox);
-        initHBox(bookmarkBox);
         initWebViewEvent();
         addressBox.getChildren().add(getTextField());
+        addressBox.getChildren().add(getButton(Style.BOOKMARK));
 
         input.setText(loc);//设置初始化地址
         analysisAddress();//分析地址
         //将三个组件添加到AnchorPane中，注意顺序webview放在bookmarkBox之前，因为隐藏书签拦就是用webview盖住bookmarkBox实现
-        anchorPane = new AnchorPane(addressBox, webview, bookmarkBox);
-        bookmarks = bookmarkBox.getChildren();
+        anchorPane = new AnchorPane(addressBox, webview);
         history = webview.getEngine().getHistory();
         setContent(anchorPane);
         setText(DEFAULT_TEXT);
         setClosable(true);
+        setOnCloseRequest((event) -> {
+            if (type != null && type.equals(Type.SETTING)) {
+                String data = webview.getEngine().executeScript(GET_FORM_DATA_SCRIPT).toString();
+                Setting s = new Setting();
+                s.init(data);
+                if (DemoController.userSettiing == null) {
+                    DemoController.userSettiing = s;
+                } else {
+                    DemoController.userSettiing.init(data);
+                }
+                dc.initSetting(false);
+                JaxbUtil.saveToXML(s, JaxbUtil.SETTING_FILE);
+            }
+        });
     }
 
-    public static void addBookmark(Node node) {
-        bookmarks.add(node);
+    public void load(String url) {
+        webview.getEngine().load(url);
     }
 
-    public static void removeBookmark(Node node) {
-        bookmarks.add(node);
+    public void setType(Type type) {
+        this.type = type;
     }
 
-    public void changeBookmarkBarVisible() {
-        double top = AnchorPane.getTopAnchor(webview);
-        currentWebViewTop = top == 28D ? 54D : 28D;
+    public void hideAddressBox() {
+        addressBox.setVisible(false);
+    }
+
+    public void changeBookmarkBarVisible(boolean flag) {
+        currentWebViewTop = flag ? 54D : 28D;
         AnchorPane.setTopAnchor(webview, currentWebViewTop);
     }
 
@@ -117,20 +135,24 @@ public class MyTab extends Tab {
                 text = "http://" + text;
             }
             webview.getEngine().load(text);
-        } else {
+        } else if (text != null && !text.trim().isEmpty()) {
             webview.getEngine().load(SEARCH + text);
         }
     }
 
     private void initWebViewEvent() {
         webview.getEngine().locationProperty().addListener((ObservableValue<? extends String> ov, final String oldLoc, final String loc) -> {
-            input.setText(loc);
+            if (!(loc.contains("setting.html") && loc.contains("file:"))) {
+                input.setText(loc);
+            }
         });
         webview.getEngine().titleProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null && !newValue.trim().isEmpty()) {
                 setText(newValue);
+                setTooltip(new Tooltip(newValue));
             } else {
                 setText(DEFAULT_TEXT);
+                setTooltip(null);
             }
         });
         webview.getEngine().documentProperty().addListener((observable, ov, document) -> {
@@ -146,7 +168,7 @@ public class MyTab extends Tab {
                             eventTarget.addEventListener(CLICK, (Event evt) -> {
                                 HTMLAnchorElement anchorElement = (HTMLAnchorElement) evt.getCurrentTarget();
                                 String href = anchorElement.getHref();
-                                MyTab mt = new MyTab(href);
+                                MyTab mt = new MyTab(href, controller);
                                 getTabPane().getTabs().add(mt);
                                 getTabPane().getSelectionModel().select(mt);
                                 evt.preventDefault();
@@ -189,6 +211,9 @@ public class MyTab extends Tab {
                 case HOME:
                     webview.getEngine().load(HOME_URL);
                     break;
+                case BOOKMARK:
+                    controller.showBookmarkPane(getText(), input.getText(), null);
+                    break;
             }
         });
         return btn;
@@ -206,12 +231,17 @@ public class MyTab extends Tab {
         BACK("left_point"),
         FORWARD("right_point"),
         REFRESH("refresh_btn"),
-        HOME("home_btn");
+        HOME("home_btn"),
+        BOOKMARK("bookmark");
         final String style;
 
         private Style(String style) {
             this.style = style;
         }
+    }
+
+    public static enum Type {
+        SETTING
     }
 
 }
