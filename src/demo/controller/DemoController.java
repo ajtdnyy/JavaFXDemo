@@ -87,6 +87,8 @@ public class DemoController implements Initializable {
             mt.changeBookmarkBarVisible(bookmarkMenu.isSelected());
         });
         bookmarkBox.setVisible(bookmarkMenu.isSelected());
+        userSettiing.setShowBookmark(bookmarkMenu.isSelected());
+        JaxbUtil.saveToXML(userSettiing, JaxbUtil.SETTING_FILE);
     }
 
     /**
